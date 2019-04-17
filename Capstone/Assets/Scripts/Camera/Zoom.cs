@@ -29,13 +29,11 @@ public class Zoom : MonoBehaviour {
     }
 
     void zoomInOneTick() {
-        Debug.Log("Zooming In");
         this.cam.orthographicSize = Mathf.Max(zoomFloor, this.cam.orthographicSize - scaledZoomSpeed);
     }
 
     void zoomOutOneTick()
     {
-        Debug.Log("Zooming Out");
         this.cam.orthographicSize = Mathf.Min(zoomCeil, this.cam.orthographicSize + scaledZoomSpeed);
 
     }

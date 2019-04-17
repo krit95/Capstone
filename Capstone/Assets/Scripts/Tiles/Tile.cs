@@ -12,8 +12,10 @@ public class Tile {
      */
 
     public readonly Vector2Int position;
+    public int x { get { return position.x; } }
+    public int y { get { return position.y; } }
 
-    // TODO: Should this really be private? 
+    // TODO: Move all this into the MapController class
     private bool walkable;
     public bool isWalkable { get { return walkable; }
                              set { this.walkable = value; } }
@@ -21,12 +23,6 @@ public class Tile {
     public Tile(int x, int y) : this(new Vector2Int(x, y)) { }
 
     public Tile (Vector2Int pos) {
-        if (pos.x < 0 || pos.x >= GameSetup.BOARD_WIDTH ||
-            pos.y < 0 || pos.y >= GameSetup.BOARD_HEIGHT) {
-            // If the position is negative or >= to the board dimentions
-            throw new System.Exception("Invalid tile position: " + pos.x + ",  " + pos.y);
-        }
-
         this.position = pos;
         this.walkable = true;
     }

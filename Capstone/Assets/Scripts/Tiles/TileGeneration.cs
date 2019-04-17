@@ -126,22 +126,14 @@ public class TileEdge {
         this.weight = weight;
     }
 
-    public override bool Equals(object obj)
-    {
+    public override bool Equals(object obj) {
         TileEdge otherTE = obj as TileEdge;
         if (otherTE == null) { return false; }
 
-        return this.weight == otherTE.weight &&
-            this.tile.Equals(otherTE.tile);
+        return this.tile.Equals(otherTE.tile);
     }
-
-    // TODO: I think a TileEdge hashcode shouldn't care about the weight
-    //       I think this because consider having one tile with several edges to a neighbor 
-    public override int GetHashCode()
-    {
-        int hash = 17;
-        hash = hash * 23 + weight;
-        hash = hash * 23 + tile.GetHashCode();
-        return hash;
+    
+    public override int GetHashCode() {
+        return tile.GetHashCode();
     }
 }

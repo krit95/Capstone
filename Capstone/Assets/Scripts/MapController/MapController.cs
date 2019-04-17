@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using System;
-using PriorityQueueDemo;
+using UnityEngine.Tilemaps;
 
 public class MapController : MonoBehaviour {
     // This is the interface through which all map related updates happen
@@ -16,7 +14,7 @@ public class MapController : MonoBehaviour {
     public static Tile[,] allTiles;  // allTiles[x, y] is how it's accessed
 
     // A mapping of all the edges coming out of a given tile
-    private Dictionary<Tile, HashSet<TileEdge>> outgoingEdges;
+    private Dictionary<Tile, HashSet<TileEdge>> outgoingEdges;  // TODO: use something other than a HashSet<TileEdge> here it's not effective
     
     // Given a key (Tile object in network), the value (set of Tile object) is all the Tiles that point to the key
     // Use this in tandom with outgoingEdges to find all incoming edges of a provided Tile
@@ -42,7 +40,6 @@ public class MapController : MonoBehaviour {
         incomingTiles = tbw.incomingTiles;
 
         // We only need to draw the ground once
-        Debug.Log("Drawing tiles");
         this.tileDraw.drawGround(allTiles);
     }
 
@@ -76,33 +73,7 @@ public class MapController : MonoBehaviour {
         // Check walkability of tile (The provided tile may be out of date or fake)
         return allTiles[t.position.x, t.position.y].isWalkable;
     }
-
-    public void addObstacleTest()
-    {
-
-        addObstacle(7, 6);
-        addObstacle(7, 5);
-        addObstacle(7, 7);
-        addObstacle(7, 8);
-        addObstacle(7, 9);
-
-        addObstacle(6, 9);
-        addObstacle(5, 9);
-        addObstacle(4, 9);
-        addObstacle(3, 9);
-
-        drawNewRock(new Tile(new Vector2Int(7, 5)));
-        drawNewRock(new Tile(new Vector2Int(7, 6)));
-        drawNewRock(new Tile(new Vector2Int(7, 7)));
-        drawNewRock(new Tile(new Vector2Int(7, 8)));
-        drawNewRock(new Tile(new Vector2Int(7, 9)));
-
-        drawNewRock(new Tile(new Vector2Int(6, 9)));
-        drawNewRock(new Tile(new Vector2Int(5, 9)));
-        drawNewRock(new Tile(new Vector2Int(4, 9)));
-        drawNewRock(new Tile(new Vector2Int(3, 9)));
-    }
-
+    
     public void addObstacle(int x, int y) {
         // Add a point to the map that is unwalkable
         Tile targetTile = allTiles[x, y];
@@ -111,6 +82,24 @@ public class MapController : MonoBehaviour {
         // Cut off all edges pointing into targetTile
         cutAllIncomingEdges(targetTile);
     }
+    
+    public void drawBlockingTile(TileBase newTile, int x, int y, int z = 0) {
+        // Draw the provided tile at the x, y position and make that tile unwalkable
+        addObstacle(x, y);
+        tileDraw.drawOnTile(newTile, GridLayers.Objects, x, y, z);
+    }
+
+    public void addBuilding(IBuilding newBuilding) {
+        // This simply draws the building onto the Building TileMap object
+        Vector2Int pos = newBuilding.position();
+        updateIncomingCost(pos.x, pos.y, 150); // We can walk through buildings, but it'll cost 150 navigation cost
+        tileDraw.drawBuilding(newBuilding);
+    }
+
+    public void construction(Vector2Int pos) {
+        tileDraw.construction(pos);
+    }
+
     #endregion
 
     #region Direct Edge Modifiers
@@ -142,9 +131,20 @@ public class MapController : MonoBehaviour {
     }
     #endregion
 
-    #region adding edges
-    //TODO: all of this
-    #endregion
+    public void updateIncomingCost(int x, int y, int newCost) {
+        // Updates all the incoming costs to the target tile to be newCost
+        // Edge refrences will be updated
+        // No edges will be added or removed
+        
+        HashSet<Tile> neighbors = this.incomingTiles[new Tile(x, y)];
+        
+        foreach(Tile n in neighbors) {
+            foreach(TileEdge incomingEdge in this.outgoingEdges[n]) {
+                // incomingEdge is an edge pointing from n -> (x,y)
+                incomingEdge.weight = newCost;
+            }
+        }
+    }
 
     #endregion
 
@@ -170,13 +170,11 @@ public class MapController : MonoBehaviour {
 
     #region Node Accessors (Tiles)
 
-    public Tile getTile(int x, int y) {
-        return allTiles[x, y];
-    }
+    public Tile getTile(int x, int y) { return allTiles[x, y]; }
+    public Tile getTile(Tile t)       { return getTile(t.x, t.y); }
 
-    public Tile getTile(Tile t) {
-        return getTile(t.position.x, t.position.y);
-    }
+    public bool isWalkable(int x, int y) { return getTile(x, y).isWalkable; }
+    public bool isWalkable(Tile t)       { return isWalkable(t.x, t.y); }
 
     #endregion
 

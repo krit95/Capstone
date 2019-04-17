@@ -16,6 +16,7 @@ class AStar {
     private int totalChecks = 0; // How many nodes have we explored? Used for early termination checks
 
     public AStar(Tile start, Tile end) {
+        // NOTE: This function goes to the map controller and pulls the actual tiles/ edges
         MapController mc = MapController.singleton;
         this.startTile = mc.getTile(start);
         this.endTile = mc.getTile(end);
@@ -116,7 +117,7 @@ class AStar {
     ///////////////////////////////////////////////////////////////
 
 
-    private class PathfindingQueueEntry //: IComparable<PathfindingQueueEntry> TODO: Remove this
+    private class PathfindingQueueEntry
     {
         // A container and utility to help us sort, modify and reason about pathfinding on tiles
 
@@ -133,27 +134,7 @@ class AStar {
 
         public HashSet<TileEdge> neighbors()
             { return MapController.singleton.getNeighborEdges(this.tile); }
-
-        // TODO: Remove this
-        /*
-        int IComparable<PathfindingQueueEntry>.CompareTo(PathfindingQueueEntry other) {
-            // Min priority queue => smallest goes first
-            // If this distSum is smaller, then return negative
-            // If this distSum is bigger, then return positive
-
-            if (this.distSum < other.distSum) {
-                // If our distance is smaller, we go first
-                return -1;
-            }
-            else if (this.distSum == other.distSum) {
-                return 0;
-            }
-            // If other distance is smaller they go first
-            return 1;
-
-        }
-        */
-
+        
     } // END PathfindingQueueEntry class
 
 } // END AStart class
